@@ -101,7 +101,7 @@ FT800Impl<FT_Trans>::~FT800Impl()
 }
 /* api to set the resolution of output display */
 template<class FT_Trans>
-FT_Status FT800Impl<FT_Trans>::Init(uint8_t ResType, uint16_t options1=0)
+FT_Status FT800Impl<FT_Trans>::Init(uint8_t ResType, uint16_t options1)
 {
 	return ( FT_GC<FT_Trans>::Init(ResType,options1) );
 	
@@ -112,7 +112,7 @@ FT_Status FT800Impl<FT_Trans>::Init(uint8_t ResType, uint16_t options1=0)
 template<class FT_Trans>
 FT_Status FT800Impl<FT_Trans>::Init(uint16_t hperiod,uint16_t vperiod,uint16_t hfrontporch,uint16_t hbackporch,uint16_t hpulsewidth,
 			   uint16_t vfrontporch,uint16_t vbackporch,uint16_t vpulsewidth,
-			   uint8_t polarity,uint8_t swizzle,uint8_t fps, uint16_t options1=0)
+			   uint8_t polarity,uint8_t swizzle,uint8_t fps, uint16_t options1)
 {
 	FT_Status Status;
 	Status = FT_GC<FT_Trans>::Init(hperiod,vperiod,hfrontporch,hbackporch,hpulsewidth,vfrontporch,vbackporch,vpulsewidth,polarity,swizzle,fps);

@@ -36,6 +36,8 @@
 #define FT_GC_MINOR				2
 #define FT_GC_BUILD				0
 
+#define min_mismatched(a,b) ((a)<(b)?(a):(b))
+
 /* FT_GC status enum - used for api return type, error type etc */
 typedef enum FT_Status
 {	
@@ -369,7 +371,7 @@ FT_GC<FT_Trans>::~FT_GC()
 
 /* API to initialize the display wrt input configuration */
 template<class FT_Trans>
-FT_Status FT_GC<FT_Trans>::Init(uint8_t ResType, uint16_t options1 = 0)
+FT_Status FT_GC<FT_Trans>::Init(uint8_t ResType, uint16_t options1)
 {
 	/* assign the pdn */
 	pinMode(PDNPin, OUTPUT);
@@ -407,7 +409,7 @@ FT_Status FT_GC<FT_Trans>::Init(uint8_t ResType, uint16_t options1 = 0)
 	return FT_OK;
 }
 template<class FT_Trans>
-FT_Status FT_GC<FT_Trans>::Init(uint16_t hperiod,uint16_t vperiod,uint16_t hfrontporch,uint16_t hbackporch,uint16_t hpulsewidth,uint16_t vfrontporch,uint16_t vbackporch,uint16_t vpulsewidth,uint8_t polarity,uint8_t swizzle,uint8_t fps, uint16_t options1 = 0)
+FT_Status FT_GC<FT_Trans>::Init(uint16_t hperiod,uint16_t vperiod,uint16_t hfrontporch,uint16_t hbackporch,uint16_t hpulsewidth,uint16_t vfrontporch,uint16_t vbackporch,uint16_t vpulsewidth,uint8_t polarity,uint8_t swizzle,uint8_t fps, uint16_t options1)
 {
 	/* based on the input arguments compute the scan out register values */
 	return FT_OK;
@@ -1641,14 +1643,14 @@ FT_GEStatus FT_GC<FT_Trans>::TransferCmd(uint8_t *Src,uint32_t NBytes)
 			//first update the free space
 			UpdateFreeSpace();
 			//then transfer the data
-			Count = min(FreeSpace,Count);
+			Count = min_mismatched(FreeSpace,Count);
 			for(i = 0;i<Count;i++)	
 				FT_Trans::Transfer(*Src++);
 			CmdFifoWp = (CmdFifoWp + Count)&0xfff;
 			FreeSpace -= Count;
 			//get the free space
 			NBytes -= Count;
-			Count = min(NBytes,FT_CMDFIFO_SIZE/2);//atleast wait for half the buffer completion
+			Count = min_mismatched(NBytes,FT_CMDFIFO_SIZE/2);//atleast wait for half the buffer completion
 			if(FT_GE_ERROR == ChkGetFreeSpace(Count))
 			{
 				return FT_GE_ERROR;
@@ -1681,7 +1683,7 @@ FT_GEStatus FT_GC<FT_Trans>::TransferCmdfromflash( prog_uchar *Src,uint32_t NByt
 			//first update the free space
 			UpdateFreeSpace();
 			//then transfer the data
-			Count = min(FreeSpace,Count);
+			Count = min_mismatched(FreeSpace,Count);
 			for(i = 0;i<Count;i++)	
 			{
 				FT_Trans::Transfer(pgm_read_byte_near(Src));
@@ -1691,7 +1693,7 @@ FT_GEStatus FT_GC<FT_Trans>::TransferCmdfromflash( prog_uchar *Src,uint32_t NByt
 			FreeSpace -= Count;
 			//get the free space
 			NBytes -= Count;
-			Count = min(NBytes,FT_CMDFIFO_SIZE/2);//atleast wait for half the buffer completion
+			Count = min_mismatched(NBytes,FT_CMDFIFO_SIZE/2);//atleast wait for half the buffer completion
 			if(FT_GE_ERROR == ChkGetFreeSpace(Count))
 			{
 				return FT_GE_ERROR;
