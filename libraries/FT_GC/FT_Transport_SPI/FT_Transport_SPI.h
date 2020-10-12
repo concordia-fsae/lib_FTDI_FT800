@@ -25,7 +25,7 @@
 
 #include <SPI.h>
 
-extern SPIClass FT_SPI;
+extern SPIClass SPI_FT;
 
 class FT_Transport_SPI
 {
@@ -51,36 +51,36 @@ class FT_Transport_SPI
 		digitalWrite(CSPin, HIGH);    
 
 		/* SPI library specific */
-		FT_SPI.begin();
+		SPI_FT.begin();
 		
 /* handle due, yue, galileo and other hardware */
 #if defined(__SAM3X8E__)
-		FT_SPI.setClockDivider(4);//hardcoding for due board
+		SPI_FT.setClockDivider(4);//hardcoding for due board
 #else	
 		/* Other Arduino boards */
-		FT_SPI.setClockDivider(SPI_CLOCK_DIV2);//for galileo this value should be fine
+		SPI_FT.setClockDivider(SPI_CLOCK_DIV2);//for galileo this value should be fine
 #endif	
 
-		FT_SPI.setBitOrder(MSBFIRST);
-		FT_SPI.setDataMode(SPI_MODE0);
+		SPI_FT.setBitOrder(MSBFIRST);
+		SPI_FT.setDataMode(SPI_MODE0);
 
 	}
 	void Exit()
 	{
 		/* close the spi channel */
-		FT_SPI.end();
+		SPI_FT.end();
 	}
 	void ChangeClock(uint32_t ClockValue)
 	{
 		/* For due it is straight forward, for others only a switch */
 #if defined(__SAM3X8E__)
-		FT_SPI.setClockDivider((uint32_t)(84*1000000/ClockValue));//hardcoding for due board
+		SPI_FT.setClockDivider((uint32_t)(84*1000000/ClockValue));//hardcoding for due board
 #else	
 		/* Other Arduino boards */
 		if(ClockValue < 1000000)
-			FT_SPI.setClockDivider(SPI_CLOCK_DIV32);//for galileo this value should be fine
+			SPI_FT.setClockDivider(SPI_CLOCK_DIV32);//for galileo this value should be fine
 		else
-			FT_SPI.setClockDivider(SPI_CLOCK_DIV2);//for galileo this value should be fine
+			SPI_FT.setClockDivider(SPI_CLOCK_DIV2);//for galileo this value should be fine
 #endif			
 	}
 	/* APIs related to memory read & write/transport */
@@ -94,10 +94,10 @@ class FT_Transport_SPI
 		};
 		UUint32 = Addr;
 		digitalWrite(CSPin, LOW);
-		FT_SPI.transfer(A[2]);
-		FT_SPI.transfer(A[1]);
-		FT_SPI.transfer(A[0]);
-		FT_SPI.transfer(0x00);//dummy byte for read
+		SPI_FT.transfer(A[2]);
+		SPI_FT.transfer(A[1]);
+		SPI_FT.transfer(A[0]);
+		SPI_FT.transfer(0x00);//dummy byte for read
 	}
 	void StartWrite(uint32_t Addr)
 	{
@@ -108,9 +108,9 @@ class FT_Transport_SPI
 		};
 		UUint32 = Addr;
 		digitalWrite(CSPin, LOW);
-		FT_SPI.transfer(A[2] | 0x80);
-		FT_SPI.transfer(A[1]);
-		FT_SPI.transfer(A[0]);
+		SPI_FT.transfer(A[2] | 0x80);
+		SPI_FT.transfer(A[1]);
+		SPI_FT.transfer(A[0]);
 	}
 	
 	//Read a byte from Addr location
@@ -118,7 +118,7 @@ class FT_Transport_SPI
 	{
 		uint8_t ReadByte;
 		StartRead(Addr);
-		ReadByte = FT_SPI.transfer(0x00);
+		ReadByte = SPI_FT.transfer(0x00);
 		EndTransfer();
 		return (ReadByte);
 	}
@@ -133,8 +133,8 @@ class FT_Transport_SPI
 		};
 		///little endian read
 		StartRead(Addr);
-		A[0] = FT_SPI.transfer(0x00);
-		A[1] = FT_SPI.transfer(0x00);		
+		A[0] = SPI_FT.transfer(0x00);
+		A[1] = SPI_FT.transfer(0x00);		
 		EndTransfer();
 		return (UUint16);
 	}
@@ -148,10 +148,10 @@ class FT_Transport_SPI
 		};
 		//little endian read
 		StartRead(Addr);		
-		A[0] = FT_SPI.transfer(0x00);
-		A[1] = FT_SPI.transfer(0x00);		
-		A[2] = FT_SPI.transfer(0x00);
-		A[3] = FT_SPI.transfer(0x00);		
+		A[0] = SPI_FT.transfer(0x00);
+		A[1] = SPI_FT.transfer(0x00);		
+		A[2] = SPI_FT.transfer(0x00);
+		A[3] = SPI_FT.transfer(0x00);		
 		EndTransfer();
 		return (UUint32);
 	}
@@ -161,7 +161,7 @@ class FT_Transport_SPI
 		uint32_t i;
 		StartRead(Addr);
 		for(i=0;i<NBytes;i++)
-			*Src++ = FT_SPI.transfer(0x00);
+			*Src++ = SPI_FT.transfer(0x00);
 		EndTransfer();
 	}
 	
@@ -169,7 +169,7 @@ class FT_Transport_SPI
 	void Write(uint32_t Addr, uint8_t Value8)
 	{	
 		StartWrite(Addr);
-		FT_SPI.transfer(Value8);
+		SPI_FT.transfer(Value8);
 		EndTransfer();
 	}
 	//write a short to Addr location
@@ -183,8 +183,8 @@ class FT_Transport_SPI
 		UUint16 = Value16;
 		///little endian read
 		StartWrite(Addr);
-		FT_SPI.transfer(A[0]);
-		FT_SPI.transfer(A[1]);		
+		SPI_FT.transfer(A[0]);
+		SPI_FT.transfer(A[1]);		
 		EndTransfer();
 	}	
 	//write a word to Addr location
@@ -198,10 +198,10 @@ class FT_Transport_SPI
 		UUint32 = Value32;
 		///little endian read
 		StartWrite(Addr);
-		FT_SPI.transfer(A[0]);
-		FT_SPI.transfer(A[1]);		
-		FT_SPI.transfer(A[2]);
-		FT_SPI.transfer(A[3]);		
+		SPI_FT.transfer(A[0]);
+		SPI_FT.transfer(A[1]);		
+		SPI_FT.transfer(A[2]);
+		SPI_FT.transfer(A[3]);		
 		EndTransfer();
 	}	
 	
@@ -210,7 +210,7 @@ class FT_Transport_SPI
 		uint32_t i;
 		StartWrite(Addr);
 		for(i=0;i<NBytes;i++)
-			FT_SPI.transfer(*Src++);
+			SPI_FT.transfer(*Src++);
 		EndTransfer();
 	}
 	
@@ -220,7 +220,7 @@ class FT_Transport_SPI
 		StartWrite(Addr);
 		for(i=0;i<NBytes;i++)
 		{
-			FT_SPI.transfer(pgm_read_byte_near(Src));
+			SPI_FT.transfer(pgm_read_byte_near(Src));
 			Src++;
 		}		
 		EndTransfer();
@@ -238,9 +238,9 @@ class FT_Transport_SPI
 		};
 		UUint32 = Addr;
 		digitalWrite(CSPin, LOW);
-		FT_SPI.transfer(A[2] | 0x80);
-		FT_SPI.transfer(A[1]);
-		FT_SPI.transfer(A[0]);
+		SPI_FT.transfer(A[2] | 0x80);
+		SPI_FT.transfer(A[1]);
+		SPI_FT.transfer(A[0]);
 	}
 
 	//de assert CSpin
@@ -251,7 +251,7 @@ class FT_Transport_SPI
 	//transfer a single byte
 	void Transfer(uint8_t Value8)
 	{
-		FT_SPI.transfer(Value8);
+		SPI_FT.transfer(Value8);
 	}
 	//transfer 2 bytes
 	void Transfer16(uint16_t Value16)
@@ -262,8 +262,8 @@ class FT_Transport_SPI
 			uint8_t  A[2];
 		};
 		UUint16 = Value16;
-		A[0] = FT_SPI.transfer(A[0]);
-		A[1] = FT_SPI.transfer(A[1]);		
+		A[0] = SPI_FT.transfer(A[0]);
+		A[1] = SPI_FT.transfer(A[1]);		
 	}
 	//transfer 4 bytes
 	void Transfer32(uint32_t Value32)
@@ -274,10 +274,10 @@ class FT_Transport_SPI
 			uint8_t  A[4];
 		};
 		UUint32 = Value32;		
-		FT_SPI.transfer(A[0]);
-		FT_SPI.transfer(A[1]);
-		FT_SPI.transfer(A[2]);
-		FT_SPI.transfer(A[3]);		
+		SPI_FT.transfer(A[0]);
+		SPI_FT.transfer(A[1]);
+		SPI_FT.transfer(A[2]);
+		SPI_FT.transfer(A[3]);		
 	}
 	//transfer N bytes
 	void Transfer(uint8_t *Buff,uint32_t NBytes)
@@ -285,7 +285,7 @@ class FT_Transport_SPI
 		uint32_t i;
 		for(i=0;i<NBytes;i++)
 		{
-			FT_SPI.transfer(*Buff++);
+			SPI_FT.transfer(*Buff++);
 		}
 	}
 	
